@@ -44,11 +44,8 @@ public class CidadeController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public Cidade adicionar(@RequestBody Cidade cidade) {
-		try {
-			return cadastroCidade.salvar(cidade);
-		} catch (EntidadeNaoEncontradaException e) {
-			throw new NegocioException(e.getMessage());
-		}
+		return cadastroCidade.salvar(cidade);
+		
 	}
 	
 	@PutMapping("/{cidadeId}")
@@ -58,11 +55,8 @@ public class CidadeController {
 		
 		BeanUtils.copyProperties(cidade, cidadeAtual, "id");
 		
-		try {
-			return cadastroCidade.salvar(cidadeAtual);
-		} catch (EntidadeNaoEncontradaException e) {
-			throw new NegocioException(e.getMessage());
-		}
+		return cadastroCidade.salvar(cidadeAtual);
+		
 	}
 	
 	@DeleteMapping("/{cidadeId}")
