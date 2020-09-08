@@ -1,52 +1,48 @@
 package com.algaworks.algafood.domain.repository;
 
 import java.util.List;
+import java.util.Optional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
 
-import org.springframework.stereotype.Component;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.algaworks.algafood.domain.model.Restaurante;
 
-public interface RestauranteRepository {
+
+import java.math.BigDecimal;
+
+public interface RestauranteRepository 
+		extends JpaRepository<Restaurante, Long>, RestauranteRepositoryQueries, JpaSpecificationExecutor<Restaurante> {
 	
-	List<Restaurante> listar();
-	Restaurante buscar(Long id);
-	Restaurante salvar(Restaurante restaurante);
-	void remover(Restaurante restaurante);
+	List<Restaurante>  findByTaxaFreteBetween(BigDecimal taxaInicial, BigDecimal taxaFinal);// entre valores
 	
-	@Component
-	public class RestauranteRepositoryImpl implements RestauranteRepository {
+	//Query and com 2 campos
+	//List<Restaurante>  findByNomeContainingAndrestauranteId(String nome, Long restaurante); //busca o nome com o ID = o and do sql
+	
+	//Query primeiro registro
+	Optional<Restaurante> findFirstByNomeContaining(String nome);
+	
+	//TOP 2
+	List<Restaurante> findTop2ByNomeContaining(String nome);
 
-	    @PersistenceContext
-	    private EntityManager manager;
-	    
-	    @Override
-	    public List<Restaurante> listar() {
-	        return manager.createQuery("from Restaurante", Restaurante.class)
-	                .getResultList();
-	    }
-	    
-	    @Override
-	    public Restaurante buscar(Long id) {
-	        return manager.find(Restaurante.class, id);
-	    }
-	    
-	    @Transactional
-	    @Override
-	    public Restaurante salvar(Restaurante restaurante) {
-	        return manager.merge(restaurante);
-	    }
-	    
-	    @Transactional
-	    @Override
-	    public void remover(Restaurante restaurante) {
-	        restaurante = buscar(restaurante.getId());
-	        manager.remove(restaurante);
-	    }
+	// contar
+	//int countByRestauranteId(Long nome);
+	
+	//modo diferente JPQL
+	
+	//@Query("from Restaurante where nome like %:nome%") sem o xml 
+	//Com o XML via arquivo ORM
+	List<Restaurante> consultarPorNome(String nome);
+	
+	
 
-	}
+		
+	
 
+	
+
+	
+	
+	
 }

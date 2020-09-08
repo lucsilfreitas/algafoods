@@ -2,51 +2,23 @@ package com.algaworks.algafood.domain.repository;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import org.springframework.stereotype.Component;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import com.algaworks.algafood.domain.model.Cozinha;
 
-
-public interface CozinhaRepository {
+@Repository
+public interface CozinhaRepository extends JpaRepository<Cozinha, Long> {
 	
 
-	List<Cozinha> Listar();
-	Cozinha buscar(Long id);
-	Cozinha salvar(Cozinha cozinha);
-	void remover(Cozinha cozinha);
+	List<Cozinha> nome(String nome);
 	
-	@Component
-	public class CozinhaRepositoryImpl implements CozinhaRepository {
+	List<Cozinha> findTodasByNomeContaining(String nome);
 
-	    @PersistenceContext
-	    private EntityManager manager;
-	    
-	    @Override
-	    public List<Cozinha> Listar() {
-	        return manager.createQuery("from Cozinha", Cozinha.class)
-	                .getResultList();
-	    }
-	    
-	    @Override
-	    public Cozinha buscar(Long id) {
-	        return manager.find(Cozinha.class, id);
-	    }
-	    
-
-		@Override
-		public Cozinha salvar(Cozinha cozinha) {
-			 return manager.merge(cozinha);
-		}
-
-		@Override
-		public void remover(Cozinha cozinha) {
-	    	cozinha = buscar(cozinha.getId());
-	        manager.remove(cozinha);
-			
-		}
-
-
-	}
+	//query se um retorno é verdadeiro ou falso
+	boolean existsByNome(String nome);
+	
+	
+	
 
 }
