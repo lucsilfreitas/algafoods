@@ -1,48 +1,35 @@
 package com.algaworks.algafood.domain.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.algaworks.algafood.domain.model.Restaurante;
 
-
-import java.math.BigDecimal;
-
+@Repository
 public interface RestauranteRepository 
-		extends JpaRepository<Restaurante, Long>, RestauranteRepositoryQueries, JpaSpecificationExecutor<Restaurante> {
+		extends CustomJpaRepository<Restaurante, Long>, RestauranteRepositoryQueries,
+		JpaSpecificationExecutor<Restaurante> {
+
+	@Query("from Restaurante r join fetch r.cozinha")
+	List<Restaurante> findAll();
 	
-	List<Restaurante>  findByTaxaFreteBetween(BigDecimal taxaInicial, BigDecimal taxaFinal);// entre valores
+	List<Restaurante> queryByTaxaFreteBetween(BigDecimal taxaInicial, BigDecimal taxaFinal);
 	
-	//Query and com 2 campos
-	//List<Restaurante>  findByNomeContainingAndrestauranteId(String nome, Long restaurante); //busca o nome com o ID = o and do sql
+//	@Query("from Restaurante where nome like %:nome% and cozinha.id = :id")
+	List<Restaurante> consultarPorNome(String nome, @Param("id") Long cozinha);
 	
-	//Query primeiro registro
-	Optional<Restaurante> findFirstByNomeContaining(String nome);
+//	List<Restaurante> findByNomeContainingAndCozinhaId(String nome, Long cozinha);
 	
-	//TOP 2
+	Optional<Restaurante> findFirstRestauranteByNomeContaining(String nome);
+	
 	List<Restaurante> findTop2ByNomeContaining(String nome);
-
-	// contar
-	//int countByRestauranteId(Long nome);
 	
-	//modo diferente JPQL
-	
-	//@Query("from Restaurante where nome like %:nome%") sem o xml 
-	//Com o XML via arquivo ORM
-	List<Restaurante> consultarPorNome(String nome);
-	
-	
-
-		
-	
-
-	
-
-	
-	
+	int countByCozinhaId(Long cozinha);
 	
 }
