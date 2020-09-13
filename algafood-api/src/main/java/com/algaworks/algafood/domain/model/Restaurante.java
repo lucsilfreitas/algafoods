@@ -1,7 +1,6 @@
 package com.algaworks.algafood.domain.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -17,45 +15,55 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.groups.ConvertGroup;
+import javax.validation.groups.Default;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.algaworks.algafood.core.validation.Groups;
+import com.algaworks.algafood.core.validation.ValorZeroIncluiDescricao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+@ValorZeroIncluiDescricao(valorField = "taxaFrete", 
+	descricaoField = "nome", descricaoObrigatoria = "Frete Grátis")
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 public class Restaurante {
-	
+
 	@EqualsAndHashCode.Include
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@NotNull
-	private String nome; // nome do restaurante
+	@NotBlank
+	@Column(nullable = false)
+	private String nome;
 	
-	@Column (name = "taxa_frete")// se não colocar o nome da coluna ele assume com o nome do atributo
+	@NotNull
+	@PositiveOrZero
+	@Column(name = "taxa_frete", nullable = false)
 	private BigDecimal taxaFrete;
-	//@JsonIgnore
-	@ManyToOne //(fetch = FetchType.LAZY)
+	
+	@Valid
+	@ConvertGroup(from = Default.class, to = Groups.CozinhaId.class)
+	@NotNull
+	@ManyToOne
 	@JoinColumn(name = "cozinha_id", nullable = false)
 	private Cozinha cozinha;
 	
-	@JsonIgnore // o eager não e comum porque pode dar problema de performance
-	@ManyToMany  (fetch = FetchType.EAGER) //muitos para muitos - muitos restaurante possuem muitas forma de pgto
-	@JoinTable(name = "restaurante_forma_pagamento",
-		joinColumns = @JoinColumn(name = "restaurante_id"),
-		inverseJoinColumns = @JoinColumn(name = "forma_pagamento_id"))
-	private List<FormaPagamento> formasdepagamento = new ArrayList<>();
-	
-	//colocando a data atual
+	@JsonIgnore
+	@Embedded
+	private Endereco endereco;
 	
 	@JsonIgnore
 	@CreationTimestamp
@@ -68,8 +76,14 @@ public class Restaurante {
 	private LocalDateTime dataAtualizacao;
 	
 	@JsonIgnore
-	//@JsonIgnore // Ignora a apresentação dod dados
-	@Embedded
-	private Endereco endereco;
-
+	@ManyToMany
+	@JoinTable(name = "restaurante_forma_pagamento",
+			joinColumns = @JoinColumn(name = "restaurante_id"),
+			inverseJoinColumns = @JoinColumn(name = "forma_pagamento_id"))
+	private List<FormaPagamento> formasPagamento = new ArrayList<>();
+	
+	@JsonIgnore
+	@OneToMany(mappedBy = "restaurante")
+	private List<Produto> produtos = new ArrayList<>();
+	
 }
